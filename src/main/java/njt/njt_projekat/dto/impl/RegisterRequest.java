@@ -25,7 +25,7 @@ public class RegisterRequest {
     @NotBlank @Email(message= "Email nije u ispravnom formatu")
     private String email;
     
-    @NotBlank @Size(min=6,max=100, message="Lozinka mora da sadrzim minimum 6 a maksimum 6 karaktera")
+    @NotBlank @Size(min=6,max=100, message="Lozinka mora da sadrzim minimum 6 a maksimum 100 karaktera")
     private String lozinka;
     
     @NotBlank @Size(min = 5, max = 255, message="Adresa mora da sadrzim minimum 5 a maksimum 255 karaktera")

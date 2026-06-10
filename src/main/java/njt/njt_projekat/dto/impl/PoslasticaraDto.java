@@ -17,7 +17,7 @@ public class PoslasticaraDto implements Dto {
     private Long poslasticaraId;
 
     @NotBlank(message = "Niste uneli naziv!")
-    @Size(max = 100, message = "Naziv ne sme da sadrzi više od 100 karaktera")
+    @Size(min = 2, max = 100, message = "Naziv mora imati izmedju 2 i 100 karaktera")
     private String naziv;
 
     @NotBlank(message = "Niste uneli adresu!")
