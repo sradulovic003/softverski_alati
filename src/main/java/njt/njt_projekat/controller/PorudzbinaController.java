@@ -78,4 +78,14 @@ public class PorudzbinaController {
         service.deleteById(id);
         return new ResponseEntity<>("Porudzbina je obrisana", HttpStatus.OK);
     }
+    
+    @PatchMapping("/{id}/dostavljac/{dostavljacId}")
+    @Operation(summary = "Dodela dostavljaca porudzbini")
+    public ResponseEntity<PorudzbinaDto> dodeliDostavljaca(@PathVariable Long id, @PathVariable Long dostavljacId) {
+        try {
+            return new ResponseEntity<>(service.dodeliDostavljaca(id, dostavljacId), HttpStatus.OK);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+    }
 }

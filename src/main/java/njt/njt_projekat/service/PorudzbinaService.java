@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import njt.njt_projekat.dto.impl.PorudzbinaDto;
 import njt.njt_projekat.dto.impl.StavkaPorudzbineDto;
+import njt.njt_projekat.entity.impl.Dostavljac;
 import njt.njt_projekat.entity.impl.Korisnik;
 import njt.njt_projekat.entity.impl.Porudzbina;
 import njt.njt_projekat.entity.impl.Proizvod;
@@ -105,5 +106,13 @@ public class PorudzbinaService {
     @Transactional
     public void deleteById(Long id) {
         porudzbine.deleteById(id);
+    }
+    
+    @Transactional
+    public PorudzbinaDto dodeliDostavljaca(Long porudzbinaId, Long dostavljacId) throws Exception {
+        Porudzbina p = porudzbine.findById(porudzbinaId);
+        p.setDostavljac(em.getReference(Dostavljac.class, dostavljacId));
+        porudzbine.save(p);
+        return mapper.toDto(p);
     }
 }
