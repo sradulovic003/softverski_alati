@@ -27,24 +27,76 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 /**
+ * Servis koji implementira poslovnu logiku za autentifikaciju korisnika.
  *
- * @author Sara
+ * Omogucava registraciju novog korisnika, prijavu, verifikaciju email adrese,
+ * slanje zahteva za reset lozinke i resetovanje lozinke.
+ * Koristi JWT token za autentifikaciju i PasswordEncoder za hesovanje lozinke.
+ *
+ * @author Sara Radulovic
+ * @version 1.0
  */
 @Service
 public class AuthService {
 
+	/**
+     * Menadzer za autentifikaciju korisnika.
+     */
     private final AuthenticationManager authManager;
-    private final JwtService jwt;  //kreirea token
+    
+    /**
+     * Servis za generisanje i validaciju JWT tokena.
+     */
+    private final JwtService jwt;  
+    
+    /**
+     * Repozitorijum za pristup podacima o korisnicima u bazi podataka.
+     */
     private final KorisnikRepository korisnici;
+    
+    /**
+     * Enkoder za hesovanje lozinki korisnika.
+     */
     private final PasswordEncoder encoder;
+    
+    /**
+     * Maper za konverziju izmedju entiteta Korisnik i DTO objekta KorisnikDto.
+     */
     private final KorisnikMapper korisnikMapper;
+    
+    /**
+     * Servis za slanje email poruka korisnicima.
+     */
     private final MailService mail;
+    
+    /**
+     * Repozitorijum za pristup tokenima za verifikaciju email adrese.
+     */
     private final VerificationTokenRepository tokens;
+    
+    /**
+     * Repozitorijum za pristup tokenima za reset lozinke.
+     */
     private final PasswordResetTokenRepository resetTokens;
 
+    /**
+     * URL adresa frontenda koja se koristi za generisanje linka za reset lozinke.
+     */
     @Value("${app.frontend.url}")
     private String frontendUrl;
 
+    /**
+     * Kreira objekat klase AuthService sa unetim zavisnostima.
+     *
+     * @param authManager Menadzer za autentifikaciju korisnika.
+     * @param jwt Servis za generisanje i validaciju JWT tokena.
+     * @param korisnici Repozitorijum za pristup podacima o korisnicima.
+     * @param encoder Enkoder za hesovanje lozinki.
+     * @param korisnikMapper Maper za konverziju izmedju entiteta i DTO objekata.
+     * @param tokens Repozitorijum za pristup tokenima za verifikaciju email adrese.
+     * @param resetTokens Repozitorijum za pristup tokenima za reset lozinke.
+     * @param mail Servis za slanje email poruka.
+     */
     public AuthService(AuthenticationManager authManager, JwtService jwt, KorisnikRepository korisnici, PasswordEncoder encoder, KorisnikMapper korisnikMapper, VerificationTokenRepository tokens, PasswordResetTokenRepository resetTokens, MailService mail) {
         this.authManager = authManager;
         this.jwt = jwt;
@@ -56,6 +108,19 @@ public class AuthService {
         this.mail = mail;
     }
 
+    /**
+     * Registruje novog korisnika u sistemu.
+     * Proverava da li korisnicko ime i email vec postoje u sistemu.
+     * Hesuje lozinku pre cuvanja u bazi podataka pomocu PasswordEncoder-a.
+     * Uloga novog korisnika se automatski postavlja na Uloga.USER.
+     * Nakon kreiranja naloga, generise se token za verifikaciju email adrese
+     * koji vazi 24 sata i salje se verifikacioni email na adresu korisnika.
+     * Nalog nije aktivan dok korisnik ne potvrdi email adresu klikom na link.
+     *
+     * @param req Podaci o novom korisniku.
+     * @return registrovani korisnik kao objekat klase KorisnikDto.
+     * @throws java.lang.Exception Ako korisnicko ime ili email vec postoje u sistemu.
+     */
     public KorisnikDto register(RegisterRequest req) throws Exception {
         if (korisnici.existsByUsername(req.getKorisnickoIme())) {
             throw new Exception("Korisnicko ime vec postoji");
@@ -95,10 +160,17 @@ public class AuthService {
         return korisnikMapper.toDto(k);
     }
 
+    /**
+     * Prijavljuje korisnika u sistem i generise JWT token.
+     * Autentifikacija se vrsi na osnovu korisnickog imena i lozinke.
+     * JWT token sadrzi ulogu korisnika kao dodatnu informaciju.
+     *
+     * @param req Podaci za prijavu (korisnicko ime i lozinka).
+     * @return odgovor sa JWT tokenom i podacima o korisniku kao objekat klase AuthResponse.
+     */
     public AuthResponse login(LoginRequest req) {
-        Authentication auth = authManager.authenticate(  //prosledjuje token provideru
+        Authentication auth = authManager.authenticate(  
                 new UsernamePasswordAuthenticationToken(req.getKorisnickoIme(), req.getLozinka()));
-        // ako ne baci Exception, autentikacija je prošla
 
         Korisnik me = korisnici.findByUsername(req.getKorisnickoIme());
         String token = jwt.generate((org.springframework.security.core.userdetails.User) auth.getPrincipal(),
@@ -107,15 +179,21 @@ public class AuthService {
         return new AuthResponse(token, korisnikMapper.toDto(me));
     }
 
+    /**
+     * Salje email sa linkom za reset lozinke na unetu email adresu.
+     * Kreira token za reset lozinke koji vazi 30 minuta.
+     * Ako email adresa ne postoji u sistemu, metoda se zavrsava bez greske
+     * kako se ne bi otkrivalo da li email postoji.
+     *
+     * @param email Email adresa korisnika koji je zatrazio reset lozinke.
+     */
     @Transactional
     public void requestPasswordReset(String email) {
         Korisnik k = korisnici.findByEmail(email);
         if (k == null) {
-            // ne otkrivamo da li email postoji
             return;
         }
 
-        // napravi token (30min = 1800s)
         PasswordResetToken t = PasswordResetToken.of(k, 1800);
         resetTokens.save(t);
 
@@ -124,7 +202,14 @@ public class AuthService {
 
         mail.sendHtml(k.getEmail(), "Reset lozinke", html);
     }
-
+    
+    /**
+     * Kreira HTML sadrzaj emaila za reset lozinke.
+     *
+     * @param korisnickoIme Korisnicko ime korisnika kome se salje email.
+     * @param link Link za reset lozinke koji se ubacuje u email.
+     * @return HTML sadrzaj emaila kao String.
+     */
     private String buildResetEmailHtml(String korisnickoIme, String link) {
         return """
         <div style="font-family: Inter,Segoe UI,Arial,sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; background:#f7f8fb;">
@@ -145,6 +230,15 @@ public class AuthService {
         """.formatted(korisnickoIme, link, link);
     }
 
+    /**
+     * Resetuje lozinku korisnika na osnovu tokena za reset.
+     * Nova lozinka se hesuje pre cuvanja u bazi podataka.
+     * Token se oznacava kao iskoriscen nakon uspesnog resetovanja lozinke.
+     *
+     * @param token Token za reset lozinke.
+     * @param password Nova lozinka korisnika.
+     * @throws java.lang.RuntimeException Ako je token neispravan, iskoriscen ili je istekao.
+     */
     public void resetPassword(String token, String password) {
         PasswordResetToken t = resetTokens.find(token);
         if (t == null || t.isUsed() || t.isExpired()) {
@@ -154,8 +248,8 @@ public class AuthService {
         k.setLozinka(encoder.encode(password));
         korisnici.save(k);
 
-        t.setUsed(true);              // označi potrošenim
-        resetTokens.save(t);          // ili resetTokens.delete(t);
+        t.setUsed(true);              
+        resetTokens.save(t);          
     }
 
 }
