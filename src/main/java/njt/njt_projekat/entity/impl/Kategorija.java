@@ -5,9 +5,27 @@
 package njt.njt_projekat.entity.impl;
 
 /**
+ * Predstavlja kategoriju proizvoda u poslasticari.
  *
- * @author Sara
+ * Svaki proizvod mora imati tacno jednu kategoriju.
+ *
+ * @author Sara Radulovic
+ * @version 1.0
  */
 public enum Kategorija {
-    TORTE,KOLACI,PITE,TARTOVI,KROFNE;
+	
+	/** Kategorija za torte. */
+    TORTE,
+    
+    /** Kategorija za kolace. */
+    KOLACI,
+    
+    /** Kategorija za pite. */
+    PITE,
+    
+    /** Kategorija za tartove. */
+    TARTOVI,
+    
+    /** Kategorija za krofne. */
+    KROFNE;
 }

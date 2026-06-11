@@ -5,9 +5,25 @@
 package njt.njt_projekat.entity.impl;
 
 /**
+ * Predstavlja status porudzbine u sistemu.
  *
- * @author Sara
+ * Svaka porudzbina prolazi kroz odgovarajuce statuse
+ * tokom svog zivotnog ciklusa.
+ *
+ * @author Sara Radulovic
+ * @version 1.0
  */
 public enum StatusPorudzbine {
-    KREIRANA, POTVRDJENA, OTKAZANA, ZAVRSENA
+	
+	/** Porudzbina je kreirana i ceka potvrdu. */
+    KREIRANA, 
+    
+    /** Porudzbina je potvrdjena i u pripremi. */
+    POTVRDJENA, 
+    
+    /** Porudzbina je otkazana. */
+    OTKAZANA, 
+    
+    /** Porudzbina je uspesno zavrsena i isporucena. */
+    ZAVRSENA
 }

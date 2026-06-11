@@ -5,9 +5,27 @@
 package njt.njt_projekat.entity.impl;
 
 /**
+ * Predstavlja ulogu korisnika u sistemu.
  *
- * @author Sara
+ * Uloga odredjuje koje operacije korisnik moze da izvrsava u sistemu.
+ *
+ * @author Sara Radulovic
+ * @version 1.0
  */
 public enum Uloga {
-    USER, ADMIN;
+	
+	/**
+     * Obican korisnik sistema.
+     * Moze da se registruje, prijavi, kreira porudzbinu,
+     * ostavi recenziju i pregleda svoje kupone.
+     */
+    USER, 
+    
+    /**
+     * Administrator sistema.
+     * Moze da kreira, azurira, pretrazuje i brise poslasticare i proizvode,
+     * upravlja porudzbinama, kreira dostavljace, dodeljuje dostavljace
+     * porudzbinama i kreira kupone.
+     */
+    ADMIN;
 }
