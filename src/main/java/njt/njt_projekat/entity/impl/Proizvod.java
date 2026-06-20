@@ -61,8 +61,8 @@ public class Proizvod implements MyEntity{
      * Jedan proizvod pripada tacno jednoj poslasticari (1..1),
      * a jedna poslasticara moze imati vise proizvoda (0..*).
      */
-    @ManyToOne
-    @JoinColumn(name="poslasticaraId")
+    @ManyToOne(optional = false)
+    @JoinColumn(name="poslasticaraId", nullable=false)
     private Poslasticara poslasticara;
     
 

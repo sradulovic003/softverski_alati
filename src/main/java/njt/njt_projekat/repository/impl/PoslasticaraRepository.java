@@ -30,11 +30,11 @@ public class PoslasticaraRepository implements MyAppRepository<Poslasticara, Lon
 
     @Override
     public Poslasticara findById(Long id) throws Exception {
-        Poslasticara proizvod = entityManager.find(Poslasticara.class, id);
-        if (proizvod == null) {
-            throw new Exception("Proizvod nije pronadjen");
+        Poslasticara poslasticara = entityManager.find(Poslasticara.class, id);
+        if (poslasticara == null) {
+            throw new Exception("Poslasticara nije pronadjen");
         }
-        return proizvod;
+        return poslasticara;
     }
 
     @Override

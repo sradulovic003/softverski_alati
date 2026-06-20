@@ -61,7 +61,7 @@ public class StavkaPorudzbine {
      * pozivu metode getPorudzbina() (FetchType.LAZY).
      */
     @ManyToOne(optional=false, fetch=FetchType.LAZY)
-    @JoinColumn(name="porudzbinaId")
+    @JoinColumn(name="porudzbinaId", nullable=false)
     private Porudzbina porudzbina;
     
     /**
@@ -72,7 +72,7 @@ public class StavkaPorudzbine {
      * pozivu metode getProizvod() (FetchType.LAZY).
      */
     @ManyToOne(optional=false, fetch=FetchType.LAZY)
-    @JoinColumn(name="proizvodId")
+    @JoinColumn(name="proizvodId", nullable=false)
     private Proizvod proizvod; 
 
     /**

@@ -242,7 +242,7 @@ public class AuthService {
     public void resetPassword(String token, String password) {
         PasswordResetToken t = resetTokens.find(token);
         if (t == null || t.isUsed() || t.isExpired()) {
-            throw new RuntimeException("Neispravan ili istekao token.");
+            throw new RuntimeException("Neispravan, iskoriscen ili istekao token.");
         }
         Korisnik k = t.getKorisnik();
         k.setLozinka(encoder.encode(password));

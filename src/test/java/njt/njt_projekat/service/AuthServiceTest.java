@@ -175,7 +175,7 @@ class AuthServiceTest {
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             authService.resetPassword("nevalidan-token", "novaLozinka");
         });
-        assertEquals("Neispravan ili istekao token.", exception.getMessage());
+        assertEquals("Neispravan, iskoriscen ili istekao token.", exception.getMessage());
     }
 
     @Test
@@ -188,7 +188,7 @@ class AuthServiceTest {
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             authService.resetPassword("iskorisceni-token", "novaLozinka");
         });
-        assertEquals("Neispravan ili istekao token.", exception.getMessage());
+        assertEquals("Neispravan, iskoriscen ili istekao token.", exception.getMessage());
     }
 
 }
