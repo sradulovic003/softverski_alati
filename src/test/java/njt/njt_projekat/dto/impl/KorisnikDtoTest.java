@@ -8,6 +8,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import jakarta.validation.*;
 import njt.njt_projekat.entity.impl.Uloga;
@@ -75,20 +77,17 @@ class KorisnikDtoTest {
         assertTrue(prekrsaji.isEmpty());
     }
 
-    @Test
-    void testImePrazno() {
-        k.setIme("");
+    @ParameterizedTest
+    @CsvSource({
+        "'', Niste uneli ime!",
+        "'   ', Niste uneli ime!",
+        "Ma, Ime mora imati izmedju 3 i 50 karaktera"
+    })
+    void testImeNevalidno(String ime, String ocekivanaPoruka) {
+        k.setIme(ime);
         Set<ConstraintViolation<KorisnikDto>> prekrsaji = validator.validateProperty(k, "ime");
         assertFalse(prekrsaji.isEmpty());
-        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Niste uneli ime!")));
-    }
-
-    @Test
-    void testImeKratko() {
-        k.setIme("Ma");
-        Set<ConstraintViolation<KorisnikDto>> prekrsaji = validator.validateProperty(k, "ime");
-        assertFalse(prekrsaji.isEmpty());
-        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Ime mora imati izmedju 3 i 50 karaktera")));
+        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals(ocekivanaPoruka)));
     }
 
     @Test
@@ -96,7 +95,15 @@ class KorisnikDtoTest {
         k.setIme("a".repeat(51));
         Set<ConstraintViolation<KorisnikDto>> prekrsaji = validator.validateProperty(k, "ime");
         assertFalse(prekrsaji.isEmpty());
-        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Ime mora imati izmedju 3 i 50 karaktera")));
+        assertEquals("Ime mora imati izmedju 3 i 50 karaktera", prekrsaji.iterator().next().getMessage());
+    }
+    
+    @Test
+    void testImeNull() {
+        k.setIme(null);
+        Set<ConstraintViolation<KorisnikDto>> prekrsaji = validator.validateProperty(k, "ime");
+        assertFalse(prekrsaji.isEmpty());
+        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Niste uneli ime!")));
     }
 
     @Test
@@ -113,6 +120,21 @@ class KorisnikDtoTest {
         assertFalse(prekrsaji.isEmpty());
         assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Prezime mora imati izmedju 3 i 100 karaktera")));
     }
+    
+    @Test
+    void testPrezimePredugo() {
+        k.setPrezime("a".repeat(101));
+        Set<ConstraintViolation<KorisnikDto>> prekrsaji = validator.validateProperty(k, "prezime");
+        assertFalse(prekrsaji.isEmpty());
+        assertEquals("Prezime mora imati izmedju 3 i 100 karaktera", prekrsaji.iterator().next().getMessage());
+    }
+    
+    @Test
+    void testPrezimeNull() {
+        k.setPrezime(null);
+        Set<ConstraintViolation<KorisnikDto>> prekrsaji = validator.validateProperty(k, "prezime");
+        assertTrue(prekrsaji.isEmpty());
+    }
 
     @Test
     void testKorisnickoImeValidno() {
@@ -121,20 +143,33 @@ class KorisnikDtoTest {
         assertTrue(prekrsaji.isEmpty());
     }
 
-    @Test
-    void testKorisnickoImePrazno() {
-        k.setKorisnickoIme("");
+    @ParameterizedTest
+    @CsvSource({
+        "'', Niste uneli korisnicko ime!",
+        "'   ', Niste uneli korisnicko ime!",
+        "ma, Korisnicko ime mora imati izmedju 3 i 50 karaktera"
+    })
+    void testKorisnickoImeNevalidno(String korisnickoIme, String ocekivanaPoruka) {
+        k.setKorisnickoIme(korisnickoIme);
         Set<ConstraintViolation<KorisnikDto>> prekrsaji = validator.validateProperty(k, "korisnickoIme");
         assertFalse(prekrsaji.isEmpty());
-        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Niste uneli korisnicko ime!")));
+        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals(ocekivanaPoruka)));
     }
 
     @Test
-    void testKorisnickoImeKratko() {
-        k.setKorisnickoIme("ma");
+    void testKorisnickoImePredugo() {
+        k.setKorisnickoIme("a".repeat(51));
         Set<ConstraintViolation<KorisnikDto>> prekrsaji = validator.validateProperty(k, "korisnickoIme");
         assertFalse(prekrsaji.isEmpty());
-        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Korisnicko ime mora imati izmedju 3 i 50 karaktera")));
+        assertEquals("Korisnicko ime mora imati izmedju 3 i 50 karaktera", prekrsaji.iterator().next().getMessage());
+    }
+
+    @Test
+    void testKorisnickoImeNull() {
+        k.setKorisnickoIme(null);
+        Set<ConstraintViolation<KorisnikDto>> prekrsaji = validator.validateProperty(k, "korisnickoIme");
+        assertFalse(prekrsaji.isEmpty());
+        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Niste uneli korisnicko ime!")));
     }
 
     @Test
@@ -157,7 +192,15 @@ class KorisnikDtoTest {
         k.setEmail("markogmail.com");
         Set<ConstraintViolation<KorisnikDto>> prekrsaji = validator.validateProperty(k, "email");
         assertFalse(prekrsaji.isEmpty());
-        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Email nije u ispravnom formatu")));
+        assertEquals("Email nije u ispravnom formatu", prekrsaji.iterator().next().getMessage());
+    }
+    
+    @Test
+    void testEmailNull() {
+        k.setEmail(null);
+        Set<ConstraintViolation<KorisnikDto>> prekrsaji = validator.validateProperty(k, "email");
+        assertFalse(prekrsaji.isEmpty());
+        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Niste uneli email!")));
     }
 
     @Test
@@ -172,14 +215,20 @@ class KorisnikDtoTest {
         k.setAdresa("ab");
         Set<ConstraintViolation<KorisnikDto>> prekrsaji = validator.validateProperty(k, "adresa");
         assertFalse(prekrsaji.isEmpty());
-        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Adresa mora imati izmedju 5 i 255 karaktera")));
-    }
+        assertEquals("Adresa mora imati izmedju 5 i 255 karaktera", prekrsaji.iterator().next().getMessage());    }
 
     @Test
     void testAdresaPreduga() {
         k.setAdresa("a".repeat(256));
         Set<ConstraintViolation<KorisnikDto>> prekrsaji = validator.validateProperty(k, "adresa");
         assertFalse(prekrsaji.isEmpty());
-        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Adresa mora imati izmedju 5 i 255 karaktera")));
+        assertEquals("Adresa mora imati izmedju 5 i 255 karaktera", prekrsaji.iterator().next().getMessage());
+    }
+    
+    @Test
+    void testAdresaNull() {
+        k.setAdresa(null);
+        Set<ConstraintViolation<KorisnikDto>> prekrsaji = validator.validateProperty(k, "adresa");
+        assertTrue(prekrsaji.isEmpty());
     }
 }

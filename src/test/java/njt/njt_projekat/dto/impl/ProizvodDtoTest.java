@@ -8,6 +8,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import jakarta.validation.*;
 import njt.njt_projekat.entity.impl.Kategorija;
@@ -64,20 +66,17 @@ class ProizvodDtoTest {
         assertTrue(prekrsaji.isEmpty());
     }
 
-    @Test
-    void testNazivPrazan() {
-        p.setNaziv("");
+    @ParameterizedTest
+    @CsvSource({
+        "'', Niste uneli naziv!",
+        "'   ', Niste uneli naziv!",
+        "T, Naziv mora imati između 2 i 100 karaktera"
+    })
+    void testNazivNevalidan(String naziv, String ocekivanaPoruka) {
+        p.setNaziv(naziv);
         Set<ConstraintViolation<ProizvodDto>> prekrsaji = validator.validateProperty(p, "naziv");
         assertFalse(prekrsaji.isEmpty());
-        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Niste uneli naziv!")));
-    }
-
-    @Test
-    void testNazivKratak() {
-        p.setNaziv("T");
-        Set<ConstraintViolation<ProizvodDto>> prekrsaji = validator.validateProperty(p, "naziv");
-        assertFalse(prekrsaji.isEmpty());
-        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Naziv mora imati između 2 i 100 karaktera")));
+        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals(ocekivanaPoruka)));
     }
 
     @Test
@@ -85,7 +84,15 @@ class ProizvodDtoTest {
         p.setNaziv("a".repeat(101));
         Set<ConstraintViolation<ProizvodDto>> prekrsaji = validator.validateProperty(p, "naziv");
         assertFalse(prekrsaji.isEmpty());
-        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Naziv mora imati između 2 i 100 karaktera")));
+        assertEquals("Naziv mora imati između 2 i 100 karaktera", prekrsaji.iterator().next().getMessage());
+    }
+
+    @Test
+    void testNazivNull() {
+        p.setNaziv(null);
+        Set<ConstraintViolation<ProizvodDto>> prekrsaji = validator.validateProperty(p, "naziv");
+        assertFalse(prekrsaji.isEmpty());
+        assertEquals("Niste uneli naziv!", prekrsaji.iterator().next().getMessage());
     }
 
     @Test
@@ -95,22 +102,18 @@ class ProizvodDtoTest {
         assertTrue(prekrsaji.isEmpty());
     }
 
-    @Test
-    void testCenaNull() {
-        p.setCena(null);
+    @ParameterizedTest
+    @CsvSource({
+        "-100.0, Cena mora biti pozitivan broj",
+        "0.0, Cena mora biti pozitivan broj"
+    })
+    void testCenaNevalidna(double cena, String ocekivanaPoruka) {
+        p.setCena(cena);
         Set<ConstraintViolation<ProizvodDto>> prekrsaji = validator.validateProperty(p, "cena");
         assertFalse(prekrsaji.isEmpty());
-        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Niste uneli cenu!")));
+        assertEquals(ocekivanaPoruka, prekrsaji.iterator().next().getMessage());
     }
-
-    @Test
-    void testCenaNegativna() {
-        p.setCena(-100.0);
-        Set<ConstraintViolation<ProizvodDto>> prekrsaji = validator.validateProperty(p, "cena");
-        assertFalse(prekrsaji.isEmpty());
-        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Cena mora biti pozitivan broj")));
-    }
-
+    
     @Test
     void testImageUrlValidan() {
         p.setImageUrl("http://slika.com/torta.jpg");
@@ -130,7 +133,7 @@ class ProizvodDtoTest {
         p.setImageUrl("nije url");
         Set<ConstraintViolation<ProizvodDto>> prekrsaji = validator.validateProperty(p, "imageUrl");
         assertFalse(prekrsaji.isEmpty());
-        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Slika mora biti link")));
+        assertEquals("Slika mora biti link", prekrsaji.iterator().next().getMessage());
     }
 
     @Test
@@ -145,7 +148,7 @@ class ProizvodDtoTest {
         p.setKategorija(null);
         Set<ConstraintViolation<ProizvodDto>> prekrsaji = validator.validateProperty(p, "kategorija");
         assertFalse(prekrsaji.isEmpty());
-        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Kategorija mora biti izabrana")));
+        assertEquals("Kategorija mora biti izabrana", prekrsaji.iterator().next().getMessage());
     }
 
     @Test
@@ -167,6 +170,6 @@ class ProizvodDtoTest {
         p.setOpis("a".repeat(501));
         Set<ConstraintViolation<ProizvodDto>> prekrsaji = validator.validateProperty(p, "opis");
         assertFalse(prekrsaji.isEmpty());
-        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Opis moze imati najvise 500 karaktera")));
+        assertEquals("Opis moze imati najvise 500 karaktera", prekrsaji.iterator().next().getMessage());
     }
 }

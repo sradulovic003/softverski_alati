@@ -8,6 +8,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import jakarta.validation.*;
 
@@ -88,10 +90,10 @@ class RecenzijaDtoTest {
 
     @Test
     void testKomentarPredug() {
-        r.setKomentar("a".repeat(501));
+    	r.setKomentar("a".repeat(501));
         Set<ConstraintViolation<RecenzijaDto>> prekrsaji = validator.validateProperty(r, "komentar");
         assertFalse(prekrsaji.isEmpty());
-        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Komentar ne sme da sadrzi vise od 500 karaktera")));
+        assertEquals("Komentar ne sme da sadrzi vise od 500 karaktera", prekrsaji.iterator().next().getMessage());
     }
 
     @Test
@@ -106,23 +108,19 @@ class RecenzijaDtoTest {
         r.setOcena(null);
         Set<ConstraintViolation<RecenzijaDto>> prekrsaji = validator.validateProperty(r, "ocena");
         assertFalse(prekrsaji.isEmpty());
-        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Niste uneli ocenu!")));
+        assertEquals("Niste uneli ocenu!", prekrsaji.iterator().next().getMessage());
     }
 
-    @Test
-    void testOcenaManjaOdMin() {
-        r.setOcena(0);
+    @ParameterizedTest
+    @CsvSource({
+        "0, Ocena mora biti najmanje 1",
+        "6, Ocena moze biti najvise 5"
+    })
+    void testOcenaNevalidna(int ocena, String ocekivanaPoruka) {
+        r.setOcena(ocena);
         Set<ConstraintViolation<RecenzijaDto>> prekrsaji = validator.validateProperty(r, "ocena");
         assertFalse(prekrsaji.isEmpty());
-        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Ocena mora biti najmanje 1")));
-    }
-
-    @Test
-    void testOcenaVecaOdMax() {
-        r.setOcena(6);
-        Set<ConstraintViolation<RecenzijaDto>> prekrsaji = validator.validateProperty(r, "ocena");
-        assertFalse(prekrsaji.isEmpty());
-        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Ocena moze biti najvise 5")));
+        assertEquals(ocekivanaPoruka, prekrsaji.iterator().next().getMessage());
     }
 
     @Test
@@ -137,7 +135,7 @@ class RecenzijaDtoTest {
         r.setKorisnikId(null);
         Set<ConstraintViolation<RecenzijaDto>> prekrsaji = validator.validateProperty(r, "korisnikId");
         assertFalse(prekrsaji.isEmpty());
-        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Nedostaje korisnik")));
+        assertEquals("Nedostaje korisnik", prekrsaji.iterator().next().getMessage());
     }
 
     @Test
@@ -152,7 +150,7 @@ class RecenzijaDtoTest {
         r.setPoslasticaraId(null);
         Set<ConstraintViolation<RecenzijaDto>> prekrsaji = validator.validateProperty(r, "poslasticaraId");
         assertFalse(prekrsaji.isEmpty());
-        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Nedostaje poslasticara")));
+        assertEquals("Nedostaje poslasticara", prekrsaji.iterator().next().getMessage());
     }
 
 }
