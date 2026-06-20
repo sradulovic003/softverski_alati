@@ -86,7 +86,7 @@ class PorudzbinaDtoTest {
         p.setKorisnikId(null);
         Set<ConstraintViolation<PorudzbinaDto>> prekrsaji = validator.validateProperty(p, "korisnikId");
         assertFalse(prekrsaji.isEmpty());
-        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Nedostaje korisnik")));
+        assertEquals("Nedostaje korisnik", prekrsaji.iterator().next().getMessage());
     }
 
     @Test
@@ -103,7 +103,7 @@ class PorudzbinaDtoTest {
         p.setStavkePorudzbine(null);
         Set<ConstraintViolation<PorudzbinaDto>> prekrsaji = validator.validateProperty(p, "stavkePorudzbine");
         assertFalse(prekrsaji.isEmpty());
-        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Porudzbina mora da sadrzi bar jednu stavku")));
+        assertEquals("Porudzbina mora da sadrzi bar jednu stavku", prekrsaji.iterator().next().getMessage());
     }
 
     @Test
@@ -111,7 +111,7 @@ class PorudzbinaDtoTest {
         p.setStavkePorudzbine(new ArrayList<>());
         Set<ConstraintViolation<PorudzbinaDto>> prekrsaji = validator.validateProperty(p, "stavkePorudzbine");
         assertFalse(prekrsaji.isEmpty());
-        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Porudzbina mora da sadrzi bar jednu stavku")));
+        assertEquals("Porudzbina mora da sadrzi bar jednu stavku", prekrsaji.iterator().next().getMessage());
     }
 
 }
