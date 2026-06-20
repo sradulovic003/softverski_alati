@@ -8,6 +8,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import jakarta.validation.*;
 
@@ -92,28 +94,25 @@ class KuponDtoTest {
         assertTrue(prekrsaji.isEmpty());
     }
 
-    @Test
-    void testKodPrazan() {
-        k.setKod("");
+    @ParameterizedTest
+    @CsvSource({
+        "'', Niste uneli kod kupona!",
+        "'   ', Niste uneli kod kupona!",
+        "KODKOJIIMAVISEODTRIDESETKARAKTERA1234, Kod ne sme da sadrzi vise od 30 karaktera"
+    })
+    void testKodNevalidan(String kod, String ocekivanaPoruka) {
+    	k.setKod(kod);
         Set<ConstraintViolation<KuponDto>> prekrsaji = validator.validateProperty(k, "kod");
         assertFalse(prekrsaji.isEmpty());
-        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Niste uneli kod kupona!")));
+        assertEquals(ocekivanaPoruka, prekrsaji.iterator().next().getMessage());
     }
 
     @Test
     void testKodNull() {
-        k.setKod(null);
+    	k.setKod(null);
         Set<ConstraintViolation<KuponDto>> prekrsaji = validator.validateProperty(k, "kod");
         assertFalse(prekrsaji.isEmpty());
-        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Niste uneli kod kupona!")));
-    }
-
-    @Test
-    void testKodPredug() {
-        k.setKod("KODKOJIIMAVISEODTRIDESETKARAKTERA1234");
-        Set<ConstraintViolation<KuponDto>> prekrsaji = validator.validateProperty(k, "kod");
-        assertFalse(prekrsaji.isEmpty());
-        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Kod ne sme da sadrzi vise od 30 karaktera")));
+        assertEquals("Niste uneli kod kupona!", prekrsaji.iterator().next().getMessage());
     }
 
     @Test
@@ -123,28 +122,24 @@ class KuponDtoTest {
         assertTrue(prekrsaji.isEmpty());
     }
 
+    @ParameterizedTest
+    @CsvSource({
+        "-5.0, Popust mora biti pozitivan broj",
+        "0.0, Popust mora biti pozitivan broj"
+    })
+    void testPopustNevalidan(Double popust, String ocekivanaPoruka) {
+    	k.setPopust(popust);
+        Set<ConstraintViolation<KuponDto>> prekrsaji = validator.validateProperty(k, "popust");
+        assertFalse(prekrsaji.isEmpty());
+        assertEquals(ocekivanaPoruka, prekrsaji.iterator().next().getMessage());
+    }
+
     @Test
     void testPopustNull() {
-        k.setPopust(null);
+    	k.setPopust(null);
         Set<ConstraintViolation<KuponDto>> prekrsaji = validator.validateProperty(k, "popust");
         assertFalse(prekrsaji.isEmpty());
-        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Niste uneli popust!")));
-    }
-
-    @Test
-    void testPopustNegativan() {
-        k.setPopust(-5.0);
-        Set<ConstraintViolation<KuponDto>> prekrsaji = validator.validateProperty(k, "popust");
-        assertFalse(prekrsaji.isEmpty());
-        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Popust mora biti pozitivan broj")));
-    }
-
-    @Test
-    void testPopustNula() {
-        k.setPopust(0.0);
-        Set<ConstraintViolation<KuponDto>> prekrsaji = validator.validateProperty(k, "popust");
-        assertFalse(prekrsaji.isEmpty());
-        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Popust mora biti pozitivan broj")));
+        assertEquals("Niste uneli popust!", prekrsaji.iterator().next().getMessage());
     }
 
     @Test
@@ -156,9 +151,9 @@ class KuponDtoTest {
 
     @Test
     void testKorisnikIdNull() {
-        k.setKorisnikId(null);
+    	k.setKorisnikId(null);
         Set<ConstraintViolation<KuponDto>> prekrsaji = validator.validateProperty(k, "korisnikId");
         assertFalse(prekrsaji.isEmpty());
-        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Nedostaje korisnik")));
+        assertEquals("Nedostaje korisnik", prekrsaji.iterator().next().getMessage());
     }
 }
