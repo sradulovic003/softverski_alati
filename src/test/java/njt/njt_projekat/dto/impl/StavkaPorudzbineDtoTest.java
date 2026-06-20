@@ -8,6 +8,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import jakarta.validation.*;
 
@@ -85,23 +87,19 @@ class StavkaPorudzbineDtoTest {
         s.setKolicina(null);
         Set<ConstraintViolation<StavkaPorudzbineDto>> prekrsaji = validator.validateProperty(s, "kolicina");
         assertFalse(prekrsaji.isEmpty());
-        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Niste uneli kolicinu!")));
+        assertEquals("Niste uneli kolicinu!", prekrsaji.iterator().next().getMessage());
     }
 
-    @Test
-    void testKolicinaNegativna() {
-        s.setKolicina(-1.0);
+    @ParameterizedTest
+    @CsvSource({
+        "-1.0, Kolicina mora biti pozitivan broj",
+        "0.0, Kolicina mora biti pozitivan broj"
+    })
+    void testKolicinaNevalidna(double kolicina, String ocekivanaPoruka) {
+        s.setKolicina(kolicina);
         Set<ConstraintViolation<StavkaPorudzbineDto>> prekrsaji = validator.validateProperty(s, "kolicina");
         assertFalse(prekrsaji.isEmpty());
-        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Kolicina mora biti pozitivan broj")));
-    }
-
-    @Test
-    void testKolicinaNula() {
-        s.setKolicina(0.0);
-        Set<ConstraintViolation<StavkaPorudzbineDto>> prekrsaji = validator.validateProperty(s, "kolicina");
-        assertFalse(prekrsaji.isEmpty());
-        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Kolicina mora biti pozitivan broj")));
+        assertEquals(ocekivanaPoruka, prekrsaji.iterator().next().getMessage());
     }
 
     @Test
@@ -116,7 +114,7 @@ class StavkaPorudzbineDtoTest {
         s.setProizvodId(null);
         Set<ConstraintViolation<StavkaPorudzbineDto>> prekrsaji = validator.validateProperty(s, "proizvodId");
         assertFalse(prekrsaji.isEmpty());
-        assertTrue(prekrsaji.stream().anyMatch(v -> v.getMessage().equals("Nedostaje proizvod")));
+        assertEquals("Nedostaje proizvod", prekrsaji.iterator().next().getMessage());
     }
 
 }
