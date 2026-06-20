@@ -77,6 +77,7 @@ class DostavljacDtoTest {
     @ParameterizedTest
     @CsvSource({
         "'', Niste uneli ime!",
+        "'   ', Niste uneli ime!",
         "MaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaToliko, Ime ne sme da sadrzi vise od 50 karaktera"
     })
     void testImeNevalidno(String ime, String ocekivanaPoruka) {
@@ -101,14 +102,28 @@ class DostavljacDtoTest {
         assertTrue(prekrsaji.isEmpty());
     }
 
+    @ParameterizedTest
+    @CsvSource({
+        "'', Niste uneli prezime!",
+        "'   ', Niste uneli prezime!",
+        "MaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaToliko, Prezime ne sme da sadrzi vise od 50 karaktera"
+    })
+    void testPrezimeNevalidno(String prezime, String ocekivanaPoruka) {
+        d.setPrezime(prezime);
+        Set<ConstraintViolation<DostavljacDto>> prekrsaji = validator.validateProperty(d, "prezime");
+        assertFalse(prekrsaji.isEmpty());
+        assertEquals(ocekivanaPoruka, prekrsaji.iterator().next().getMessage());
+    }
+
     @Test
-    void testPrezimePrazno() {
-        d.setPrezime("");
+    void testPrezimeNull() {
+        d.setPrezime(null);
         Set<ConstraintViolation<DostavljacDto>> prekrsaji = validator.validateProperty(d, "prezime");
         assertFalse(prekrsaji.isEmpty());
         assertEquals("Niste uneli prezime!", prekrsaji.iterator().next().getMessage());
     }
-
+    
+    
     @Test
     void testTelefonValidno() {
         d.setTelefon("0601234567");
@@ -116,13 +131,17 @@ class DostavljacDtoTest {
         assertTrue(prekrsaji.isEmpty());
     }
 
-    @Test
-    void testTelefonPrazno() {
-        d.setTelefon("");
+    @ParameterizedTest
+    @CsvSource({
+        "'', Niste uneli telefon!",
+        "'   ', Niste uneli telefon!"
+    })
+    void testTelefonNevalidno(String telefon, String ocekivanaPoruka) {
+        d.setTelefon(telefon);
         Set<ConstraintViolation<DostavljacDto>> prekrsaji = validator.validateProperty(d, "telefon");
         assertFalse(prekrsaji.isEmpty());
         boolean sadrziPoruku = prekrsaji.stream()
-                .anyMatch(v -> v.getMessage().equals("Niste uneli telefon!"));
+                .anyMatch(v -> v.getMessage().equals(ocekivanaPoruka));
         assertTrue(sadrziPoruku);
     }
 
@@ -131,9 +150,7 @@ class DostavljacDtoTest {
         d.setTelefon("abc");
         Set<ConstraintViolation<DostavljacDto>> prekrsaji = validator.validateProperty(d, "telefon");
         assertFalse(prekrsaji.isEmpty());
-        boolean sadrziPoruku = prekrsaji.stream()
-                .anyMatch(v -> v.getMessage().equals("Telefon mora imati 6 do 20 karaktera (cifre, +, -, /, razmak)"));
-        assertTrue(sadrziPoruku);
+        assertEquals("Telefon mora imati 6 do 20 karaktera (cifre, +, -, /, razmak)", prekrsaji.iterator().next().getMessage());
     }
 
 }
